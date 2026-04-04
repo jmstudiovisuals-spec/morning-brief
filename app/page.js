@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 const personaLabels = {
   mentor: { name: 'Jack', role: 'Mentor' },
   concurrent: { name: 'Cliff', role: 'Concurrent' },
-  client: { name: 'Shepperd', role: 'Client' }
+  client: { name: 'Dan', role: 'Client' }
 };
 
 const avatarMap = {
