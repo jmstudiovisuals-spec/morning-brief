@@ -1,4 +1,3 @@
-
 export async function POST(req) {
   try {
     const { yesterday, today, situation, persona } = await req.json();
@@ -21,7 +20,7 @@ Adapte-toi : si Florian pose une question ou décrit une situation, réponds-y d
  
       client: `Tu es un responsable communication d'une entreprise sport/lifestyle à Nantes, client exigeant de Florian. Tu parles depuis tes attentes et ton point de vue business.
  
-Adapte-toi : si Florian pose une question ou décrit une situation, réponds depuis l'angle client — ce que ça implique pour sa relation avec toi, pour sa réputation, pour ses livrables. 80-120 mots. Pas de bonjour. Commence directement.`
+Adapte-toi : si Florian pose une question ou décrit une situation, réponds depuis l'angle client. 80-120 mots. Pas de bonjour. Commence directement.`
     };
  
     const userContent = [
@@ -34,7 +33,6 @@ Adapte-toi : si Florian pose une question ou décrit une situation, réponds dep
       return Response.json({ error: 'Aucune donnée fournie.' });
     }
  
-    // Génération script via Claude
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -55,30 +53,7 @@ Adapte-toi : si Florian pose une question ou décrit une situation, réponds dep
     const script = claudeData.content?.[0]?.text;
     if (!script) return Response.json({ error: 'Script vide.' });
  
-    // Synthèse vocale ElevenLabs — Adam (masculine neutre)
-    const voiceId = 'pNInz6obpgDQGcFmaJgB';
-    const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'xi-api-key': process.env.ELEVENLABS_API_KEY
-      },
-      body: JSON.stringify({
-        text: script,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-      })
-    });
- 
-    if (!elevenRes.ok) {
-      const errText = await elevenRes.text();
-      return Response.json({ script, error: 'ElevenLabs: ' + errText.slice(0, 150) });
-    }
- 
-    const audioBuffer = await elevenRes.arrayBuffer();
-    const audioBase64 = Buffer.from(audioBuffer).toString('base64');
- 
-    return Response.json({ script, audio: audioBase64 });
+    return Response.json({ script });
  
   } catch(err) {
     return Response.json({ error: 'Erreur serveur: ' + err.message });
