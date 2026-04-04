@@ -1,18 +1,18 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
- 
+
 const personaLabels = {
   mentor: 'Mentor',
   concurrent: 'Concurrent',
   client: 'Client'
 };
- 
+
 const avatarMap = {
   mentor: '/MENTOR.png',
   concurrent: '/CONCURRENT.png',
   client: '/CLIENT.png'
 };
- 
+
 export default function Home() {
   const [yesterday, setYesterday] = useState('');
   const [today, setToday] = useState('');
@@ -25,7 +25,7 @@ export default function Home() {
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState('');
   const audioRef = useRef(null);
- 
+
   useEffect(() => {
     const update = () => {
       const now = new Date();
@@ -39,7 +39,7 @@ export default function Home() {
     const interval = setInterval(update, 60000);
     return () => clearInterval(interval);
   }, []);
- 
+
   const playAudio = (base64) => {
     if (audioRef.current) { audioRef.current.pause(); }
     const audio = new Audio(`data:audio/mpeg;base64,${base64}`);
@@ -49,7 +49,7 @@ export default function Home() {
     audio.onerror = () => { setPlaying(false); setStatus('Erreur audio.'); };
     audio.play();
   };
- 
+
   const launch = async () => {
     if (!today.trim() && !situation.trim()) {
       setStatus('Indique ton focus ou ta situation du jour.');
@@ -75,15 +75,15 @@ export default function Home() {
     }
     setLoading(false);
   };
- 
+
   const handlePlay = () => { if (audioData) playAudio(audioData); };
- 
+
   const stop = () => {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
     setPlaying(false);
     setStatus('Stoppé.');
   };
- 
+
   return (
     <>
       <style>{`
@@ -98,12 +98,12 @@ export default function Home() {
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
         .container { width: 100%; max-width: 500px; }
         .header { margin-bottom: 32px; }
-        .brand { margin-bottom: 8px; }
-        .brand-inf { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; line-height: 1.0; color: var(--orange); margin-right: 12px; }
-        .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
-        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; text-transform: uppercase; color: var(--orange); letter-spacing: -.01em; margin-bottom: 4px; }
-        .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
- 
+        .brand { margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .brand-inf { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.0; color: #fff; margin-right: 12px; }
+        .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
+        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; text-transform: uppercase; color: var(--orange); letter-spacing: -.01em; margin-bottom: 4px; text-align: center; }
+        .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
+
         .avatar-section { margin-bottom: 28px; }
         .persona-selector { display: flex; gap: 12px; justify-content: center; }
         .persona-card {
@@ -146,7 +146,7 @@ export default function Home() {
           height: 2px;
           background: var(--orange);
         }
- 
+
         .section { margin-bottom: 16px; }
         label { display: block; font-size: 9px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted3); margin-bottom: 7px; }
         textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 300; padding: 13px 16px; border-radius: 8px; resize: none; outline: none; line-height: 1.6; transition: border-color .2s, background .2s; }
@@ -157,7 +157,7 @@ export default function Home() {
         .situation-field textarea { background: transparent; border: none; padding: 0; font-size: 13px; }
         .situation-field textarea:focus { background: transparent; border: none; }
         .situation-field textarea::placeholder { color: rgba(255,69,0,0.18); }
- 
+
         .launch { width: 100%; background: var(--orange); border: none; color: #000; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; padding: 18px; border-radius: 8px; cursor: pointer; transition: opacity .2s, transform .1s; margin-top: 8px; }
         .launch:hover { opacity: .85; transform: translateY(-1px); }
         .launch:active { transform: translateY(0); }
@@ -185,7 +185,7 @@ export default function Home() {
         .dot { display: inline-block; width: 5px; height: 5px; background: var(--orange); border-radius: 50%; margin-right: 8px; animation: pulse 1.2s ease-in-out infinite; }
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.1; } }
       `}</style>
- 
+
       <div className="container">
         <div className="header">
           <div className="brand">
@@ -194,7 +194,7 @@ export default function Home() {
           <div className="time">{time}</div>
           <div className="app-title">Inner III</div>
         </div>
- 
+
         <div className="avatar-section">
           <div className="persona-selector">
             {Object.entries(personaLabels).map(([key, label]) => (
@@ -209,26 +209,26 @@ export default function Home() {
             ))}
           </div>
         </div>
- 
+
         <div className="section">
           <label>Hier — ce que tu as accompli</label>
           <textarea rows={2} value={yesterday} onChange={e => setYesterday(e.target.value)} placeholder="ex: tournage Naobike, 3 cold DM envoyés..." />
         </div>
- 
+
         <div className="section">
           <label>Aujourd'hui — focus principal</label>
           <textarea rows={2} value={today} onChange={e => setToday(e.target.value)} placeholder="ex: finir montage Ronin, relancer Valentin..." />
         </div>
- 
+
         <div className="situation-field">
           <label>Situation / Question du jour (optionnel)</label>
           <textarea rows={2} value={situation} onChange={e => setSituation(e.target.value)} placeholder="ex: je doute de ma direction, comment gérer ce client..." />
         </div>
- 
+
         <button className="launch" onClick={launch} disabled={loading}>
           {loading ? 'Analyse en cours...' : 'Lancer le brief'}
         </button>
- 
+
         {(script || status) && (
           <div className="output">
             <div className="divider" />
