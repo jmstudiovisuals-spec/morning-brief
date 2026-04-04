@@ -1,4 +1,3 @@
-
 const GITHUB_OWNER = 'jmstudiovisuals-spec';
 const GITHUB_REPO = 'morning-brief';
 const CONTEXT_PATH = 'context';
@@ -18,7 +17,7 @@ async function fetchContextFiles() {
     );
  
     const contextParts = await Promise.all(
-      pdfFiles.slice(0, 8).map(async (file) => {
+      pdfFiles.slice(0, 4).map(async (file) => {
         try {
           const fileRes = await fetch(file.download_url);
           const arrayBuffer = await fileRes.arrayBuffer();
@@ -146,3 +145,4 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
+ 
