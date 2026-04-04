@@ -17,8 +17,7 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState('');
-  const audioRef = useRef(null);
-  const lastAudioRef = useRef(null);
+  const lastScriptRef = useRef(null);
  
   useEffect(() => {
     const update = () => {
@@ -34,15 +33,20 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
  
-  const playAudio = (base64) => {
-    if (audioRef.current) { audioRef.current.pause(); }
-    const audio = new Audio(`data:audio/mpeg;base64,${base64}`);
-    audioRef.current = audio;
-    lastAudioRef.current = base64;
-    audio.onplay = () => { setPlaying(true); setStatus('Lecture en cours...'); };
-    audio.onended = () => { setPlaying(false); setStatus('Brief terminé.'); };
-    audio.onerror = () => { setPlaying(false); setStatus('Erreur audio.'); };
-    audio.play();
+  const speak = (text) => {
+    if (!window.speechSynthesis) { setStatus('Voix non supportée.'); return; }
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'fr-FR';
+    utt.rate = 0.92;
+    utt.pitch = 0.88;
+    const voices = window.speechSynthesis.getVoices();
+    const fr = voices.find(v => v.lang.startsWith('fr'));
+    if (fr) utt.voice = fr;
+    utt.onstart = () => { setPlaying(true); setStatus('Lecture en cours...'); };
+    utt.onend = () => { setPlaying(false); setStatus('Brief terminé.'); };
+    utt.onerror = () => { setPlaying(false); setStatus('Erreur voix.'); };
+    window.speechSynthesis.speak(utt);
   };
  
   const launch = async () => {
@@ -62,20 +66,23 @@ export default function Home() {
       const data = await res.json();
       if (data.error) { setStatus('Erreur : ' + data.error); setLoading(false); return; }
       setScript(data.script);
-      if (data.audio) { setStatus('Chargement audio...'); playAudio(data.audio); }
+      lastScriptRef.current = data.script;
+      setStatus('Brief prêt. Appuie sur Écouter.');
     } catch (err) {
       setStatus('Erreur : ' + err.message);
     }
     setLoading(false);
   };
  
+  const handlePlay = () => {
+    if (lastScriptRef.current) speak(lastScriptRef.current);
+  };
+ 
   const stop = () => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
     setPlaying(false);
     setStatus('Stoppé.');
   };
- 
-  const replay = () => { if (lastAudioRef.current) playAudio(lastAudioRef.current); };
  
   return (
     <>
@@ -83,10 +90,10 @@ export default function Home() {
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-          --bg: #080808; --surface: #0f0f0f; --surface2: #161616;
+          --bg: #080808; --surface: #0f0f0f;
           --border: #1e1e1e; --orange: #FF4500; --orange-dim: rgba(255,69,0,0.06);
           --orange-border: rgba(255,69,0,0.14); --text: #f0f0f0;
-          --muted: #444; --muted2: #2a2a2a; --muted3: #555;
+          --muted: #444; --muted2: #2a2a2a;
         }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 24px; }
         .container { width: 100%; max-width: 520px; }
@@ -127,6 +134,8 @@ export default function Home() {
         .bar:nth-child(8) { animation-delay: .35s; }
         @keyframes wave { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(5); } }
         .script-box { background: var(--surface); border: 1px solid var(--border); border-left: 2px solid var(--orange); padding: 20px 24px; border-radius: 6px; font-size: 13px; font-weight: 300; line-height: 1.9; color: #888; white-space: pre-wrap; margin-bottom: 16px; }
+        .play-btn { width: 100%; background: #000; border: 1px solid var(--orange); color: var(--orange); font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; padding: 16px; border-radius: 6px; cursor: pointer; margin-bottom: 10px; transition: all .15s; }
+        .play-btn:hover { background: var(--orange); color: #000; }
         .controls { display: flex; gap: 8px; margin-bottom: 12px; }
         .cbtn { flex: 1; background: var(--surface); border: 1px solid var(--border); color: #333; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; padding: 12px; border-radius: 4px; cursor: pointer; transition: all .15s; }
         .cbtn:hover { border-color: var(--orange); color: var(--text); }
@@ -163,7 +172,7 @@ export default function Home() {
         </div>
  
         <button className="launch" onClick={launch} disabled={loading}>
-          {loading ? '⏳ Génération...' : '▶ Lancer le brief'}
+          {loading ? 'Génération...' : 'Lancer le brief'}
         </button>
  
         {(script || status) && (
@@ -175,10 +184,15 @@ export default function Home() {
             {script && (
               <>
                 <div className="script-box">{script}</div>
-                <div className="controls">
-                  <button className="cbtn" onClick={replay}>↻ Rejouer</button>
-                  <button className="cbtn" onClick={stop}>◼ Stop</button>
-                </div>
+                {!playing && (
+                  <button className="play-btn" onClick={handlePlay}>Ecouter le brief</button>
+                )}
+                {playing && (
+                  <div className="controls">
+                    <button className="cbtn" onClick={handlePlay}>Rejouer</button>
+                    <button className="cbtn" onClick={stop}>Stop</button>
+                  </div>
+                )}
               </>
             )}
             <div className="status">
