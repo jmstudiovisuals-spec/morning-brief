@@ -87,7 +87,7 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
           --bg: #080808; --surface: #0d0d0d; --surface2: #121212;
@@ -130,11 +130,10 @@ export default function Home() {
           background: var(--surface);
         }
         .card-name {
-          font-family: 'Syne', sans-serif;
-          font-weight: 800;
-          font-size: 14px;
-          letter-spacing: .04em;
-          text-transform: uppercase;
+          font-family: 'Playfair Display', serif;
+          font-weight: 700;
+          font-size: 15px;
+          letter-spacing: .02em;
           color: var(--text);
           display: block;
           transition: color .2s;
@@ -176,7 +175,7 @@ export default function Home() {
         textarea::placeholder { color: var(--muted2); }
         .situation-field { background: var(--orange-dim); border: 1px solid var(--orange-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
         .situation-field label { color: rgba(255,69,0,0.45); }
-        .situation-field textarea { background: transparent; border: none; padding: 0; font-size: 13px; }
+        .situation-field textarea { background: transparent; border: none; padding: 0; font-size: 16px; }
         .situation-field textarea:focus { background: transparent; border: none; }
         .situation-field textarea::placeholder { color: rgba(255,69,0,0.18); }
 
@@ -225,7 +224,7 @@ export default function Home() {
                 className={`persona-card${persona === key ? ' active' : ''}`}
                 onClick={() => setPersona(key)}
               >
-                <img src={avatarMap[key]} alt={label} />
+                <img src={avatarMap[key]} alt={label.name} />
                 <div className="card-label">
                   <span className="card-name">{label.name}</span>
                   <div className="card-divider"></div>
