@@ -1,6 +1,3 @@
-
-Copier
-
 export async function POST(req) {
   try {
     const { yesterday, today, situation, persona } = await req.json();
@@ -87,3 +84,4 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
+ 
