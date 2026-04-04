@@ -87,7 +87,7 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
           --bg: #080808; --surface: #0d0d0d; --surface2: #121212;
@@ -98,13 +98,13 @@ export default function Home() {
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
         .container { width: 100%; max-width: 500px; }
         .header { margin-bottom: 32px; }
-        .brand { margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .brand { margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
         .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
         .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; text-transform: uppercase; color: var(--orange); letter-spacing: -.01em; margin-bottom: 4px; text-align: center; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
 
         .avatar-section { margin-bottom: 28px; }
-        .persona-selector { display: flex; gap: 12px; justify-content: center; }
+        .persona-selector { display: flex; gap: 10px; justify-content: center; }
         .persona-card {
           flex: 1;
           cursor: pointer;
@@ -126,28 +126,29 @@ export default function Home() {
         }
         .persona-card .card-label {
           text-align: center;
-          padding: 10px 6px 12px;
+          padding: 8px 4px 10px;
           background: var(--surface);
         }
         .card-name {
-          font-family: 'Playfair Display', serif;
-          font-weight: 700;
-          font-size: 15px;
-          letter-spacing: .02em;
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: .06em;
+          text-transform: uppercase;
           color: var(--text);
           display: block;
           transition: color .2s;
         }
         .card-divider {
-          width: 20px;
+          width: 16px;
           height: 1px;
           background: var(--border);
-          margin: 5px auto;
+          margin: 4px auto;
           transition: background .2s;
         }
         .card-role {
           font-family: 'Inter', sans-serif;
-          font-size: 8px;
+          font-size: 7px;
           font-weight: 400;
           letter-spacing: .2em;
           text-transform: uppercase;
@@ -157,7 +158,6 @@ export default function Home() {
         }
         .persona-card.active .card-name { color: var(--orange); }
         .persona-card.active .card-divider { background: var(--orange); opacity: .5; }
-        .persona-card.active .card-role { color: var(--muted3); }
         .persona-card.active::after {
           content: '';
           position: absolute;
