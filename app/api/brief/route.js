@@ -1,15 +1,20 @@
-import { list, getDownloadUrl } from '@vercel/blob';
+import { list } from '@vercel/blob';
  
 async function fetchContextFromBlob() {
   try {
     const { blobs } = await list();
-    const pdfBlobs = blobs.filter(b => b.pathname.endsWith('.pdf'));
+    const pdfBlobs = blobs.filter(b => b.pathname.toLowerCase().endsWith('.pdf'));
  
     const contextParts = await Promise.all(
       pdfBlobs.slice(0, 8).map(async (blob) => {
         try {
           const res = await fetch(blob.downloadUrl);
           const arrayBuffer = await res.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          // Vérifie signature PDF (%PDF-)
+          if (bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46) {
+            return null;
+          }
           const base64 = Buffer.from(arrayBuffer).toString('base64');
           return {
             type: 'document',
@@ -96,11 +101,7 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     const script = claudeData.content?.[0]?.text;
     if (!script) return Response.json({ error: 'Script vide.' });
  
-    const voiceMap = {
-      mentor: 'onyx',
-      concurrent: 'echo',
-      client: 'fable'
-    };
+    const voiceMap = { mentor: 'onyx', concurrent: 'echo', client: 'fable' };
     const selectedVoice = voiceMap[persona] || 'onyx';
  
     const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
