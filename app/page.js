@@ -91,7 +91,7 @@ export default function Home() {
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 24px; }
         .container { width: 100%; max-width: 520px; }
         .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .brand img { height: 20px; width: auto; }
+        .brand img { height: 36px; width: auto; }
         .brand-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
         .brand-sub { font-size: 10px; font-weight: 300; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
         .time { font-size: 10px; color: #2e2e2e; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 12px; }
