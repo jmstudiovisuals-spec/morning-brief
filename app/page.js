@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 
 const personaLabels = {
-  mentor: 'Mentor',
-  concurrent: 'Concurrent',
-  client: 'Client'
+  mentor: { name: 'Jack', role: 'Mentor' },
+  concurrent: { name: 'Cliff', role: 'Concurrent' },
+  client: { name: 'Shepperd', role: 'Client' }
 };
 
 const avatarMap = {
@@ -126,16 +126,39 @@ export default function Home() {
         }
         .persona-card .card-label {
           text-align: center;
-          font-family: 'Inter', sans-serif;
-          font-size: 9px;
-          font-weight: 500;
-          letter-spacing: .15em;
+          padding: 10px 6px 12px;
+          background: var(--surface);
+        }
+        .card-name {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: 14px;
+          letter-spacing: .04em;
           text-transform: uppercase;
-          padding: 8px 4px;
-          color: var(--muted3);
+          color: var(--text);
+          display: block;
           transition: color .2s;
         }
-        .persona-card.active .card-label { color: var(--orange); }
+        .card-divider {
+          width: 20px;
+          height: 1px;
+          background: var(--border);
+          margin: 5px auto;
+          transition: background .2s;
+        }
+        .card-role {
+          font-family: 'Inter', sans-serif;
+          font-size: 8px;
+          font-weight: 400;
+          letter-spacing: .2em;
+          text-transform: uppercase;
+          color: var(--muted3);
+          display: block;
+          transition: color .2s;
+        }
+        .persona-card.active .card-name { color: var(--orange); }
+        .persona-card.active .card-divider { background: var(--orange); opacity: .5; }
+        .persona-card.active .card-role { color: var(--muted3); }
         .persona-card.active::after {
           content: '';
           position: absolute;
@@ -203,7 +226,11 @@ export default function Home() {
                 onClick={() => setPersona(key)}
               >
                 <img src={avatarMap[key]} alt={label} />
-                <div className="card-label">{label}</div>
+                <div className="card-label">
+                  <span className="card-name">{label.name}</span>
+                  <div className="card-divider"></div>
+                  <span className="card-role">{label.role}</span>
+                </div>
               </div>
             ))}
           </div>
