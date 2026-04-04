@@ -1,4 +1,48 @@
 
+const GITHUB_OWNER = 'jmstudiovisuals-spec';
+const GITHUB_REPO = 'morning-brief';
+const CONTEXT_PATH = 'context';
+ 
+async function fetchContextFiles() {
+  try {
+    const listRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${CONTEXT_PATH}`,
+      { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+    );
+    const files = await listRes.json();
+    if (!Array.isArray(files)) return [];
+ 
+    const pdfFiles = files.filter(f =>
+      f.name !== 'placeholder.txt' &&
+      (f.name.endsWith('.pdf') || f.name.endsWith('.PDF'))
+    );
+ 
+    const contextParts = await Promise.all(
+      pdfFiles.slice(0, 8).map(async (file) => {
+        try {
+          const fileRes = await fetch(file.download_url);
+          const arrayBuffer = await fileRes.arrayBuffer();
+          const base64 = Buffer.from(arrayBuffer).toString('base64');
+          return {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: base64
+            }
+          };
+        } catch (e) {
+          return null;
+        }
+      })
+    );
+ 
+    return contextParts.filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+ 
 export async function POST(req) {
   try {
     const { yesterday, today, situation, persona } = await req.json();
@@ -21,8 +65,10 @@ export async function POST(req) {
  
     const systemPrompt = `Tu es UpMate, un système de coaching matinal de haute précision.
  
+Tu as accès aux documents de référence de Florian — utilise-les pour personnaliser tes conseils, faire référence à ses méthodes, ses offres, ses scripts, son contexte réel.
+ 
 TON PROCESSUS INTERNE (invisible pour l'utilisateur) :
-1. Analyse la situation de Florian
+1. Analyse la situation de Florian en croisant avec ses documents
 2. Identifie le domaine principal : entrepreneuriat, psychologie, stratégie, philosophie, ou combinaison
 3. Convoque mentalement les esprits les plus pertinents selon le domaine :
    - Entrepreneuriat : Elon Musk, Paul Graham, Peter Thiel, Naval Ravikant
@@ -36,6 +82,15 @@ IMPORTANT : Ne mentionne JAMAIS ces esprits dans ta réponse. Ne montre pas le p
  
 ${personaVoice[persona] || personaVoice.mentor}`;
  
+    const contextDocs = await fetchContextFiles();
+ 
+    const userMessage = contextDocs.length > 0
+      ? [
+          ...contextDocs,
+          { type: 'text', text: userContent }
+        ]
+      : userContent;
+ 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -47,7 +102,7 @@ ${personaVoice[persona] || personaVoice.mentor}`;
         model: 'claude-opus-4-5',
         max_tokens: 1000,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userContent }]
+        messages: [{ role: 'user', content: userMessage }]
       })
     });
  
@@ -56,7 +111,6 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     const script = claudeData.content?.[0]?.text;
     if (!script) return Response.json({ error: 'Script vide.' });
  
-    // Voix différente par persona
     const voiceMap = {
       mentor: 'onyx',
       concurrent: 'echo',
