@@ -2,14 +2,15 @@
 import { useState, useEffect, useRef } from 'react';
  
 const personaLabels = {
-  mentor: 'Mentor froid',
+  mentor: 'Mentor',
   concurrent: 'Concurrent',
-  client: 'Client exigeant'
+  client: 'Client'
 };
  
 export default function Home() {
   const [yesterday, setYesterday] = useState('');
   const [today, setToday] = useState('');
+  const [situation, setSituation] = useState('');
   const [persona, setPersona] = useState('mentor');
   const [script, setScript] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,10 @@ export default function Home() {
   };
  
   const launch = async () => {
-    if (!today.trim()) { setStatus('Indique ton focus du jour.'); return; }
+    if (!today.trim() && !situation.trim()) {
+      setStatus('Indique ton focus ou ta situation du jour.');
+      return;
+    }
     setLoading(true);
     setScript('');
     setStatus('Génération en cours...');
@@ -53,7 +57,7 @@ export default function Home() {
       const res = await fetch('/api/brief', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ yesterday, today, persona })
+        body: JSON.stringify({ yesterday, today, situation, persona })
       });
       const data = await res.json();
       if (data.error) { setStatus('Erreur : ' + data.error); setLoading(false); return; }
@@ -76,33 +80,44 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-          --bg: #0a0a0a; --surface: #111; --border: #1f1f1f;
-          --orange: #ff5c00; --orange-dim: rgba(255,92,0,0.15);
-          --text: #e8e8e0; --muted: #555; --muted2: #333;
+          --bg: #080808; --surface: #0f0f0f; --surface2: #161616;
+          --border: #1e1e1e; --orange: #FF4500; --orange-dim: rgba(255,69,0,0.06);
+          --orange-border: rgba(255,69,0,0.14); --text: #f0f0f0;
+          --muted: #444; --muted2: #2a2a2a; --muted3: #555;
         }
-        body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .container { width: 100%; max-width: 560px; }
-        .time { font-size: 11px; color: var(--muted); letter-spacing: .15em; text-transform: uppercase; margin-bottom: 8px; }
-        h1 { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1.1; margin-bottom: 40px; }
-        h1 em { font-style: italic; color: var(--orange); }
-        label { display: block; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-        textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; padding: 14px 16px; border-radius: 4px; resize: none; outline: none; line-height: 1.6; margin-bottom: 20px; transition: border-color .2s; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 24px; }
+        .container { width: 100%; max-width: 520px; }
+        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .brand img { height: 20px; width: auto; }
+        .brand-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
+        .brand-sub { font-size: 10px; font-weight: 300; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+        .time { font-size: 10px; color: #2e2e2e; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 12px; }
+        h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 42px; line-height: 1.0; text-transform: uppercase; color: var(--text); margin-bottom: 36px; }
+        h1 span { color: var(--orange); }
+        label { display: block; font-size: 9px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+        textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; padding: 13px 16px; border-radius: 6px; resize: none; outline: none; line-height: 1.6; margin-bottom: 18px; transition: border-color .2s; }
         textarea:focus { border-color: var(--orange); }
         textarea::placeholder { color: var(--muted2); }
-        .persona-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
-        .pbtn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; padding: 8px 14px; border-radius: 2px; cursor: pointer; transition: all .15s; text-transform: uppercase; }
+        .situation-field { background: var(--orange-dim); border: 1px solid var(--orange-border); border-radius: 6px; padding: 14px 16px; margin-bottom: 22px; }
+        .situation-field label { color: rgba(255,69,0,0.5); margin-bottom: 6px; }
+        .situation-field textarea { background: transparent; border: none; padding: 0; margin-bottom: 0; font-size: 13px; }
+        .situation-field textarea:focus { border: none; }
+        .situation-field textarea::placeholder { color: rgba(255,69,0,0.2); }
+        .persona-row { display: flex; gap: 6px; margin-bottom: 26px; }
+        .pbtn { background: var(--surface); border: 1px solid var(--border); color: #333; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .12em; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all .15s; text-transform: uppercase; }
         .pbtn:hover { border-color: var(--orange); color: var(--text); }
-        .pbtn.active { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
-        .launch { width: 100%; background: var(--orange); border: none; color: #000; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; padding: 18px; border-radius: 4px; cursor: pointer; transition: opacity .2s; }
-        .launch:hover { opacity: .85; }
-        .launch:disabled { opacity: .4; cursor: not-allowed; }
-        hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
-        .waveform { display: flex; align-items: center; gap: 3px; height: 32px; margin-bottom: 20px; }
-        .bar { width: 3px; background: var(--orange); border-radius: 2px; height: 4px; transition: height .1s; }
-        .bar.playing { animation: wave .8s ease-in-out infinite; }
+        .pbtn.active { background: var(--orange); border-color: var(--orange); color: #000; font-weight: 600; }
+        .launch { width: 100%; background: var(--orange); border: none; color: #000; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; padding: 18px; border-radius: 6px; cursor: pointer; transition: opacity .2s, transform .1s; }
+        .launch:hover { opacity: .88; transform: translateY(-1px); }
+        .launch:active { transform: translateY(0); }
+        .launch:disabled { opacity: .3; cursor: not-allowed; transform: none; }
+        hr { border: none; border-top: 1px solid #141414; margin: 32px 0; }
+        .waveform { display: flex; align-items: center; gap: 3px; height: 24px; margin-bottom: 22px; }
+        .bar { width: 2px; background: var(--orange); border-radius: 2px; height: 3px; opacity: .5; }
+        .bar.playing { animation: wave .7s ease-in-out infinite; opacity: 1; }
         .bar:nth-child(2) { animation-delay: .1s; }
         .bar:nth-child(3) { animation-delay: .2s; }
         .bar:nth-child(4) { animation-delay: .3s; }
@@ -110,27 +125,37 @@ export default function Home() {
         .bar:nth-child(6) { animation-delay: .25s; }
         .bar:nth-child(7) { animation-delay: .05s; }
         .bar:nth-child(8) { animation-delay: .35s; }
-        @keyframes wave { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(4); } }
-        .script-box { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; border-radius: 4px; font-size: 13px; line-height: 1.8; color: #ccc; white-space: pre-wrap; margin-bottom: 20px; }
-        .controls { display: flex; gap: 10px; margin-bottom: 12px; }
-        .cbtn { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .15em; text-transform: uppercase; padding: 12px; border-radius: 4px; cursor: pointer; transition: border-color .2s; }
-        .cbtn:hover { border-color: var(--orange); }
-        .status { font-size: 11px; color: var(--muted); letter-spacing: .1em; min-height: 16px; }
-        .dot { display: inline-block; width: 6px; height: 6px; background: var(--orange); border-radius: 50%; margin-right: 8px; animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.2; } }
+        @keyframes wave { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(5); } }
+        .script-box { background: var(--surface); border: 1px solid var(--border); border-left: 2px solid var(--orange); padding: 20px 24px; border-radius: 6px; font-size: 13px; font-weight: 300; line-height: 1.9; color: #888; white-space: pre-wrap; margin-bottom: 16px; }
+        .controls { display: flex; gap: 8px; margin-bottom: 12px; }
+        .cbtn { flex: 1; background: var(--surface); border: 1px solid var(--border); color: #333; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; padding: 12px; border-radius: 4px; cursor: pointer; transition: all .15s; }
+        .cbtn:hover { border-color: var(--orange); color: var(--text); }
+        .status { font-size: 10px; color: var(--muted); letter-spacing: .1em; min-height: 16px; text-transform: uppercase; }
+        .dot { display: inline-block; width: 5px; height: 5px; background: var(--orange); border-radius: 50%; margin-right: 8px; animation: pulse 1.2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.15; } }
       `}</style>
  
       <div className="container">
+        <div className="brand">
+          <img src="https://framerusercontent.com/images/7igMTlkIIljhHw0RQXwAf9WMZ4A.png" alt="JMStudio" />
+          <div className="brand-dot" />
+          <span className="brand-sub">Daily Coach</span>
+        </div>
         <div className="time">{time}</div>
-        <h1>Morning<br /><em>Brief</em></h1>
+        <h1>DAILY<br /><span>BRIEF.</span></h1>
  
-        <label>Hier — ce que tu as fait</label>
-        <textarea rows={2} value={yesterday} onChange={e => setYesterday(e.target.value)} placeholder="ex: tournage Naobike, prospection 3 contacts..." />
+        <label>Hier — ce que tu as accompli</label>
+        <textarea rows={2} value={yesterday} onChange={e => setYesterday(e.target.value)} placeholder="ex: tournage Naobike, 3 cold DM envoyés..." />
  
         <label>Aujourd'hui — focus principal</label>
-        <textarea rows={2} value={today} onChange={e => setToday(e.target.value)} placeholder="ex: finir montage Ronin, envoyer 5 cold DM..." />
+        <textarea rows={2} value={today} onChange={e => setToday(e.target.value)} placeholder="ex: finir montage Ronin, relancer Valentin..." />
  
-        <label>Persona</label>
+        <div className="situation-field">
+          <label>Situation / Question du jour (optionnel)</label>
+          <textarea rows={2} value={situation} onChange={e => setSituation(e.target.value)} placeholder="ex: je doute de ma direction, comment gérer ce client..." />
+        </div>
+ 
+        <label>Voix</label>
         <div className="persona-row">
           {Object.entries(personaLabels).map(([key, label]) => (
             <button key={key} className={`pbtn${persona === key ? ' active' : ''}`} onClick={() => setPersona(key)}>{label}</button>
@@ -166,5 +191,4 @@ export default function Home() {
     </>
   );
 }
- 
  
