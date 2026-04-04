@@ -3,58 +3,26 @@ import { list } from '@vercel/blob';
 async function fetchContextFromBlob() {
   try {
     const { blobs } = await list();
+    const pdfBlobs = blobs.filter(b => b.pathname.toLowerCase().endsWith('.pdf'));
  
     const contextParts = await Promise.all(
-      blobs.slice(0, 12).map(async (blob) => {
+      pdfBlobs.slice(0, 8).map(async (blob) => {
         try {
-          const name = blob.pathname.toLowerCase();
           const res = await fetch(blob.downloadUrl);
           const arrayBuffer = await res.arrayBuffer();
           const bytes = new Uint8Array(arrayBuffer);
- 
-          // PDF
-          if (name.endsWith('.pdf')) {
-            if (bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46) {
-              return null;
+          if (bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46) {
+            return null;
+          }
+          const base64 = Buffer.from(arrayBuffer).toString('base64');
+          return {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: base64
             }
-            const base64 = Buffer.from(arrayBuffer).toString('base64');
-            return {
-              type: 'document',
-              source: {
-                type: 'base64',
-                media_type: 'application/pdf',
-                data: base64
-              }
-            };
-          }
- 
-          // Images PNG
-          if (name.endsWith('.png')) {
-            const base64 = Buffer.from(arrayBuffer).toString('base64');
-            return {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/png',
-                data: base64
-              }
-            };
-          }
- 
-          // Images JPG/JPEG
-          if (name.endsWith('.jpg') || name.endsWith('.jpeg')) {
-            const base64 = Buffer.from(arrayBuffer).toString('base64');
-            return {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: base64
-              }
-            };
-          }
- 
-          return null;
+          };
         } catch (e) {
           return null;
         }
@@ -89,10 +57,10 @@ export async function POST(req) {
  
     const systemPrompt = `Tu es UpMate, un système de coaching matinal de haute précision.
  
-Tu as accès aux documents et images de référence de Florian — utilise-les pour personnaliser tes conseils, faire référence à ses méthodes, ses offres, ses scripts, son contexte réel.
+Tu as accès aux documents de référence de Florian — utilise-les pour personnaliser tes conseils, faire référence à ses méthodes, ses offres, ses scripts, son contexte réel.
  
 TON PROCESSUS INTERNE (invisible pour l'utilisateur) :
-1. Analyse la situation de Florian en croisant avec ses documents et images
+1. Analyse la situation de Florian en croisant avec ses documents
 2. Identifie le domaine principal : entrepreneuriat, psychologie, stratégie, philosophie, ou combinaison
 3. Convoque mentalement les esprits les plus pertinents selon le domaine :
    - Entrepreneuriat : Elon Musk, Paul Graham, Peter Thiel, Naval Ravikant
@@ -163,4 +131,3 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
- 
