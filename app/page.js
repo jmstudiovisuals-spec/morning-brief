@@ -99,7 +99,6 @@ export default function Home() {
         .container { width: 100%; max-width: 500px; }
         .header { margin-bottom: 32px; }
         .brand { margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .brand-inf { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.0; color: #fff; margin-right: 12px; }
         .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
         .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; text-transform: uppercase; color: var(--orange); letter-spacing: -.01em; margin-bottom: 4px; text-align: center; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
@@ -189,7 +188,7 @@ export default function Home() {
       <div className="container">
         <div className="header">
           <div className="brand">
-            <span className="brand-inf">∞</span><span className="brand-name">UpMate</span>
+            <span className="brand-name">UpMate</span>
           </div>
           <div className="time">{time}</div>
           <div className="app-title">Inner III</div>
@@ -259,4 +258,3 @@ export default function Home() {
     </>
   );
 }
- 
