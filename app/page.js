@@ -7,6 +7,12 @@ const personaLabels = {
   client: 'Client'
 };
  
+const avatarMap = {
+  mentor: '/MENTOR.png',
+  concurrent: '/CONCURRENT.png',
+  client: '/CLIENT.png'
+};
+ 
 export default function Home() {
   const [yesterday, setYesterday] = useState('');
   const [today, setToday] = useState('');
@@ -91,13 +97,57 @@ export default function Home() {
         }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
         .container { width: 100%; max-width: 500px; }
-        .header { margin-bottom: 44px; }
-        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
-        .brand img { height: 36px; width: auto; }
+        .header { margin-bottom: 32px; }
+        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .brand img.logo { height: 36px; width: auto; }
         .brand-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
         .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
         .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 48px; line-height: 1.0; text-transform: uppercase; color: var(--text); letter-spacing: -.01em; margin-bottom: 4px; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+ 
+        .avatar-section { margin-bottom: 28px; }
+        .persona-selector { display: flex; gap: 12px; justify-content: center; }
+        .persona-card {
+          flex: 1;
+          cursor: pointer;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          overflow: hidden;
+          transition: border-color .2s, transform .15s;
+          background: var(--surface);
+          position: relative;
+        }
+        .persona-card:hover { transform: translateY(-2px); border-color: #333; }
+        .persona-card.active { border-color: var(--orange); }
+        .persona-card img {
+          width: 100%;
+          aspect-ratio: 3/4;
+          object-fit: cover;
+          object-position: top;
+          display: block;
+        }
+        .persona-card .card-label {
+          text-align: center;
+          font-family: 'Inter', sans-serif;
+          font-size: 9px;
+          font-weight: 500;
+          letter-spacing: .15em;
+          text-transform: uppercase;
+          padding: 8px 4px;
+          color: var(--muted3);
+          transition: color .2s;
+        }
+        .persona-card.active .card-label { color: var(--orange); }
+        .persona-card.active::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--orange);
+        }
+ 
         .section { margin-bottom: 16px; }
         label { display: block; font-size: 9px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted3); margin-bottom: 7px; }
         textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; padding: 13px 16px; border-radius: 8px; resize: none; outline: none; line-height: 1.6; transition: border-color .2s, background .2s; }
@@ -108,12 +158,8 @@ export default function Home() {
         .situation-field textarea { background: transparent; border: none; padding: 0; font-size: 13px; }
         .situation-field textarea:focus { background: transparent; border: none; }
         .situation-field textarea::placeholder { color: rgba(255,69,0,0.18); }
-        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-        .persona-row { display: flex; gap: 6px; }
-        .pbtn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .1em; padding: 7px 14px; border-radius: 4px; cursor: pointer; transition: all .15s; text-transform: uppercase; }
-        .pbtn:hover { border-color: var(--orange); color: var(--text); }
-        .pbtn.active { background: var(--orange); border-color: var(--orange); color: #000; font-weight: 600; }
-        .launch { width: 100%; background: var(--orange); border: none; color: #000; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; padding: 18px; border-radius: 8px; cursor: pointer; transition: opacity .2s, transform .1s; }
+ 
+        .launch { width: 100%; background: var(--orange); border: none; color: #000; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; padding: 18px; border-radius: 8px; cursor: pointer; transition: opacity .2s, transform .1s; margin-top: 8px; }
         .launch:hover { opacity: .85; transform: translateY(-1px); }
         .launch:active { transform: translateY(0); }
         .launch:disabled { opacity: .25; cursor: not-allowed; transform: none; }
@@ -144,12 +190,27 @@ export default function Home() {
       <div className="container">
         <div className="header">
           <div className="brand">
-            <img src="https://framerusercontent.com/images/7igMTlkIIljhHw0RQXwAf9WMZ4A.png" alt="JMStudio" />
+            <img className="logo" src="https://framerusercontent.com/images/7igMTlkIIljhHw0RQXwAf9WMZ4A.png" alt="JMStudio" />
             <div className="brand-dot" />
             <span className="brand-name">UpMate</span>
           </div>
           <div className="time">{time}</div>
           <div className="app-title">UpMate</div>
+        </div>
+ 
+        <div className="avatar-section">
+          <div className="persona-selector">
+            {Object.entries(personaLabels).map(([key, label]) => (
+              <div
+                key={key}
+                className={`persona-card${persona === key ? ' active' : ''}`}
+                onClick={() => setPersona(key)}
+              >
+                <img src={avatarMap[key]} alt={label} />
+                <div className="card-label">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
  
         <div className="section">
@@ -165,15 +226,6 @@ export default function Home() {
         <div className="situation-field">
           <label>Situation / Question du jour (optionnel)</label>
           <textarea rows={2} value={situation} onChange={e => setSituation(e.target.value)} placeholder="ex: je doute de ma direction, comment gérer ce client..." />
-        </div>
- 
-        <div className="row">
-          <label style={{margin:0}}>Voix</label>
-          <div className="persona-row">
-            {Object.entries(personaLabels).map(([key, label]) => (
-              <button key={key} className={`pbtn${persona === key ? ' active' : ''}`} onClick={() => setPersona(key)}>{label}</button>
-            ))}
-          </div>
         </div>
  
         <button className="launch" onClick={launch} disabled={loading}>
@@ -210,4 +262,5 @@ export default function Home() {
     </>
   );
 }
+ 
  
