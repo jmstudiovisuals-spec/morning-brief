@@ -1,28 +1,44 @@
 import { list } from '@vercel/blob';
  
+const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB max par image
+ 
 async function fetchContextFromBlob() {
   try {
     const { blobs } = await list();
-    const pdfBlobs = blobs.filter(b => b.pathname.toLowerCase().endsWith('.pdf'));
  
     const contextParts = await Promise.all(
-      pdfBlobs.slice(0, 8).map(async (blob) => {
+      blobs.slice(0, 12).map(async (blob) => {
         try {
+          const name = blob.pathname.toLowerCase();
           const res = await fetch(blob.downloadUrl);
           const arrayBuffer = await res.arrayBuffer();
           const bytes = new Uint8Array(arrayBuffer);
-          if (bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46) {
-            return null;
-          }
-          const base64 = Buffer.from(arrayBuffer).toString('base64');
-          return {
-            type: 'document',
-            source: {
-              type: 'base64',
-              media_type: 'application/pdf',
-              data: base64
+ 
+          // PDF
+          if (name.endsWith('.pdf')) {
+            if (bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46) {
+              return null;
             }
-          };
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+            return {
+              type: 'document',
+              source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+            };
+          }
+ 
+          // Images — ignore si trop lourdes
+          if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.webp')) {
+            if (arrayBuffer.byteLength > MAX_IMAGE_SIZE) return null;
+            const mediaType = name.endsWith('.png') ? 'image/png' :
+                              name.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+            return {
+              type: 'image',
+              source: { type: 'base64', media_type: mediaType, data: base64 }
+            };
+          }
+ 
+          return null;
         } catch (e) {
           return null;
         }
@@ -57,10 +73,10 @@ export async function POST(req) {
  
     const systemPrompt = `Tu es UpMate, un système de coaching matinal de haute précision.
  
-Tu as accès aux documents de référence de Florian — utilise-les pour personnaliser tes conseils, faire référence à ses méthodes, ses offres, ses scripts, son contexte réel.
+Tu as accès aux documents et images de référence de Florian — utilise-les pour personnaliser tes conseils, faire référence à ses méthodes, ses offres, ses scripts, son contexte réel. Les images peuvent contenir des captures d'écran de conversations, stats, tableaux ou schémas — analyse-les attentivement.
  
 TON PROCESSUS INTERNE (invisible pour l'utilisateur) :
-1. Analyse la situation de Florian en croisant avec ses documents
+1. Analyse la situation de Florian en croisant avec ses documents et images
 2. Identifie le domaine principal : entrepreneuriat, psychologie, stratégie, philosophie, ou combinaison
 3. Convoque mentalement les esprits les plus pertinents selon le domaine :
    - Entrepreneuriat : Elon Musk, Paul Graham, Peter Thiel, Naval Ravikant
