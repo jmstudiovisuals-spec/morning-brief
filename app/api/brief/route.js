@@ -72,7 +72,7 @@ ${personaVoice[persona] || personaVoice.mentor}`;
  
     if (!ttsRes.ok) {
       const errText = await ttsRes.text();
-      return Response.json({ script, error: 'OpenAI TTS: ' + errText.slice(0, 150) });
+      return Response.json({ script, audioError: 'OpenAI TTS erreur ' + ttsRes.status + ': ' + errText.slice(0, 200) });
     }
  
     const audioBuffer = await ttsRes.arrayBuffer();
@@ -84,4 +84,3 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
- 
