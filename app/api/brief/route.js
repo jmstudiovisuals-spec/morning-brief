@@ -1,5 +1,4 @@
 
-Copier
 
 import { list } from '@vercel/blob';
  
