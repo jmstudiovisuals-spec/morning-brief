@@ -164,8 +164,7 @@ export default function Home() {
           </div>
           <div className="time">{time}</div>
           <div className="app-title">
-            <div className="app-title-main">Ton conseil.<br />Ton entourage.</div>
-            <div className="app-title-sub">Le meilleur de chaque esprit — synthétisé pour toi</div>
+            <div className="app-title-main">UpMate</div>
           </div>
         </div>
  
