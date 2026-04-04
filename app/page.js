@@ -150,7 +150,7 @@ export default function Home() {
  
         .section { margin-bottom: 16px; }
         label { display: block; font-size: 9px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted3); margin-bottom: 7px; }
-        textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; padding: 13px 16px; border-radius: 8px; resize: none; outline: none; line-height: 1.6; transition: border-color .2s, background .2s; }
+        textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 300; padding: 13px 16px; border-radius: 8px; resize: none; outline: none; line-height: 1.6; transition: border-color .2s, background .2s; }
         textarea:focus { border-color: var(--orange); background: var(--surface2); }
         textarea::placeholder { color: var(--muted2); }
         .situation-field { background: var(--orange-dim); border: 1px solid var(--orange-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
@@ -262,4 +262,3 @@ export default function Home() {
     </>
   );
 }
- 
