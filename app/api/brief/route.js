@@ -1,3 +1,4 @@
+
 export async function POST(req) {
   try {
     const { yesterday, today, situation, persona } = await req.json();
@@ -55,7 +56,14 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     const script = claudeData.content?.[0]?.text;
     if (!script) return Response.json({ error: 'Script vide.' });
  
-    // OpenAI TTS - voix Echo
+    // Voix différente par persona
+    const voiceMap = {
+      mentor: 'onyx',
+      concurrent: 'echo',
+      client: 'fable'
+    };
+    const selectedVoice = voiceMap[persona] || 'onyx';
+ 
     const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -65,7 +73,7 @@ ${personaVoice[persona] || personaVoice.mentor}`;
       body: JSON.stringify({
         model: 'tts-1',
         input: script,
-        voice: 'echo',
+        voice: selectedVoice,
         speed: 0.95
       })
     });
@@ -84,4 +92,3 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
- 
