@@ -1,3 +1,6 @@
+
+Copier
+
 import { list } from '@vercel/blob';
  
 const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB max par image
