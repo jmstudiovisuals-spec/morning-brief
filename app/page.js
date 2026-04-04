@@ -2,8 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 
 const personaLabels = {
-  mentor: { name: 'Jack', role: 'Mentor' },
   concurrent: { name: 'Cliff', role: 'Concurrent' },
+  mentor: { name: 'Jack', role: 'Mentor' },
   client: { name: 'Dan', role: 'Client' }
 };
 
