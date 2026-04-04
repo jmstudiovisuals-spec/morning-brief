@@ -98,11 +98,10 @@ export default function Home() {
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
         .container { width: 100%; max-width: 500px; }
         .header { margin-bottom: 32px; }
-        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .brand img.logo { height: 36px; width: auto; }
-        .brand-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
-        .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
-        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; text-transform: uppercase; color: var(--text); letter-spacing: -.01em; margin-bottom: 4px; }
+        .brand { margin-bottom: 8px; }
+        .brand-inf { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 52px; line-height: 1.0; color: var(--orange); margin-right: 12px; }
+        .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 52px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
+        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; text-transform: uppercase; color: var(--orange); letter-spacing: -.01em; margin-bottom: 4px; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
  
         .avatar-section { margin-bottom: 28px; }
@@ -190,9 +189,7 @@ export default function Home() {
       <div className="container">
         <div className="header">
           <div className="brand">
-            <img className="logo" src="https://framerusercontent.com/images/7igMTlkIIljhHw0RQXwAf9WMZ4A.png" alt="JMStudio" />
-            <div className="brand-dot" />
-            <span className="brand-name">UpMate</span>
+            <span className="brand-inf">∞</span><span className="brand-name">UpMate</span>
           </div>
           <div className="time">{time}</div>
           <div className="app-title">Inner III</div>
