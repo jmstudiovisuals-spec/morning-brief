@@ -102,7 +102,7 @@ export default function Home() {
         .brand img.logo { height: 36px; width: auto; }
         .brand-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
         .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
-        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 48px; line-height: 1.0; text-transform: uppercase; color: var(--text); letter-spacing: -.01em; margin-bottom: 4px; }
+        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; text-transform: uppercase; color: var(--text); letter-spacing: -.01em; margin-bottom: 4px; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
  
         .avatar-section { margin-bottom: 28px; }
@@ -195,7 +195,7 @@ export default function Home() {
             <span className="brand-name">UpMate</span>
           </div>
           <div className="time">{time}</div>
-          <div className="app-title">UpMate</div>
+          <div className="app-title">Digital Builder Circle</div>
         </div>
  
         <div className="avatar-section">
@@ -262,5 +262,4 @@ export default function Home() {
     </>
   );
 }
- 
  
