@@ -195,7 +195,7 @@ export default function Home() {
             <span className="brand-name">UpMate</span>
           </div>
           <div className="time">{time}</div>
-          <div className="app-title">Digital Builder Circle</div>
+          <div className="app-title">Inner III</div>
         </div>
  
         <div className="avatar-section">
