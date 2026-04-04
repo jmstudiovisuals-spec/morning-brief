@@ -99,8 +99,8 @@ export default function Home() {
         .container { width: 100%; max-width: 500px; }
         .header { margin-bottom: 32px; }
         .brand { margin-bottom: 8px; }
-        .brand-inf { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 52px; line-height: 1.0; color: var(--orange); margin-right: 12px; }
-        .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 52px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
+        .brand-inf { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; line-height: 1.0; color: var(--orange); margin-right: 12px; }
+        .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; line-height: 1.0; letter-spacing: -.02em; text-transform: uppercase; color: var(--text); }
         .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; text-transform: uppercase; color: var(--orange); letter-spacing: -.01em; margin-bottom: 4px; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
  
@@ -259,3 +259,4 @@ export default function Home() {
     </>
   );
 }
+ 
