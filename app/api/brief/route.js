@@ -8,7 +8,8 @@ export async function POST(req) {
       client: `Tu es un responsable communication d'une entreprise de sport à Nantes, client fictif de Florian. Brief matinal 80-100 mots. Ton business, impatient. Pas de bonjour. Commence directement.`
     };
 
-    const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    // Génération du script via Claude
+    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,23 +24,37 @@ export async function POST(req) {
       })
     });
 
-    const rawText = await apiResponse.text();
+    const claudeData = await claudeRes.json();
+    if (claudeData.error) return Response.json({ error: 'Claude: ' + claudeData.error.message });
+    const script = claudeData.content?.[0]?.text;
+    if (!script) return Response.json({ error: 'Script vide' });
 
-    let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch(e) {
-      return Response.json({ script: 'Erreur parsing: ' + rawText.slice(0, 200) });
+    // Synthèse vocale via ElevenLabs — voix "Adam" (masculine neutre)
+    const voiceId = 'pNInz6obpgDQGcFmaJgB';
+    const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'xi-api-key': process.env.ELEVENLABS_API_KEY
+      },
+      body: JSON.stringify({
+        text: script,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+      })
+    });
+
+    if (!elevenRes.ok) {
+      const errText = await elevenRes.text();
+      return Response.json({ script, error: 'ElevenLabs: ' + errText.slice(0, 100) });
     }
 
-    if (data.error) {
-      return Response.json({ script: 'Erreur API: ' + data.error.message });
-    }
+    const audioBuffer = await elevenRes.arrayBuffer();
+    const audioBase64 = Buffer.from(audioBuffer).toString('base64');
 
-    const script = data.content?.[0]?.text || 'Réponse vide: ' + JSON.stringify(data);
-    return Response.json({ script });
+    return Response.json({ script, audio: audioBase64 });
 
   } catch(err) {
-    return Response.json({ script: 'Erreur serveur: ' + err.message });
+    return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
