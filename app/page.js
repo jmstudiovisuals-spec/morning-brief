@@ -13,12 +13,11 @@ export default function Home() {
   const [situation, setSituation] = useState('');
   const [persona, setPersona] = useState('mentor');
   const [script, setScript] = useState('');
-  const [audioData, setAudioData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState('');
-  const audioRef = useRef(null);
+  const lastScriptRef = useRef(null);
  
   useEffect(() => {
     const update = () => {
@@ -34,14 +33,20 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
  
-  const playAudio = (base64) => {
-    if (audioRef.current) { audioRef.current.pause(); }
-    const audio = new Audio(`data:audio/mpeg;base64,${base64}`);
-    audioRef.current = audio;
-    audio.onplay = () => { setPlaying(true); setStatus('Lecture en cours...'); };
-    audio.onended = () => { setPlaying(false); setStatus('Brief terminé.'); };
-    audio.onerror = () => { setPlaying(false); setStatus('Erreur audio.'); };
-    audio.play();
+  const speak = (text) => {
+    if (!window.speechSynthesis) { setStatus('Voix non supportée.'); return; }
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'fr-FR';
+    utt.rate = 0.92;
+    utt.pitch = 0.88;
+    const voices = window.speechSynthesis.getVoices();
+    const fr = voices.find(v => v.lang.startsWith('fr'));
+    if (fr) utt.voice = fr;
+    utt.onstart = () => { setPlaying(true); setStatus('Lecture en cours...'); };
+    utt.onend = () => { setPlaying(false); setStatus('Brief terminé.'); };
+    utt.onerror = () => { setPlaying(false); setStatus('Erreur voix.'); };
+    window.speechSynthesis.speak(utt);
   };
  
   const launch = async () => {
@@ -51,7 +56,6 @@ export default function Home() {
     }
     setLoading(true);
     setScript('');
-    setAudioData(null);
     setStatus('Analyse en cours...');
     try {
       const res = await fetch('/api/brief', {
@@ -60,20 +64,20 @@ export default function Home() {
         body: JSON.stringify({ yesterday, today, situation, persona })
       });
       const data = await res.json();
-      if (data.error && !data.script) { setStatus('Erreur : ' + data.error); setLoading(false); return; }
+      if (data.error) { setStatus('Erreur : ' + data.error); setLoading(false); return; }
       setScript(data.script);
-      setAudioData(data.audio || null);
-      setStatus(data.audio ? 'Brief prêt.' : 'Brief généré — audio indisponible.');
+      lastScriptRef.current = data.script;
+      setStatus('Brief prêt.');
     } catch (err) {
       setStatus('Erreur : ' + err.message);
     }
     setLoading(false);
   };
  
-  const handlePlay = () => { if (audioData) playAudio(audioData); };
+  const handlePlay = () => { if (lastScriptRef.current) speak(lastScriptRef.current); };
  
   const stop = () => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
     setPlaying(false);
     setStatus('Stoppé.');
   };
@@ -91,44 +95,34 @@ export default function Home() {
         }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
         .container { width: 100%; max-width: 500px; }
- 
         .header { margin-bottom: 44px; }
         .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
         .brand img { height: 36px; width: auto; }
         .brand-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
         .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
- 
-        .app-title { margin-bottom: 4px; }
-        .app-title-main { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 48px; line-height: 1.0; text-transform: uppercase; color: var(--text); letter-spacing: -.01em; }
-        .app-title-sub { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 300; color: var(--muted3); letter-spacing: .2em; text-transform: uppercase; margin-top: 8px; }
+        .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 48px; line-height: 1.0; text-transform: uppercase; color: var(--text); letter-spacing: -.01em; margin-bottom: 4px; }
         .time { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
- 
         .section { margin-bottom: 16px; }
         label { display: block; font-size: 9px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted3); margin-bottom: 7px; }
         textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; padding: 13px 16px; border-radius: 8px; resize: none; outline: none; line-height: 1.6; transition: border-color .2s, background .2s; }
         textarea:focus { border-color: var(--orange); background: var(--surface2); }
         textarea::placeholder { color: var(--muted2); }
- 
         .situation-field { background: var(--orange-dim); border: 1px solid var(--orange-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
         .situation-field label { color: rgba(255,69,0,0.45); }
         .situation-field textarea { background: transparent; border: none; padding: 0; font-size: 13px; }
         .situation-field textarea:focus { background: transparent; border: none; }
         .situation-field textarea::placeholder { color: rgba(255,69,0,0.18); }
- 
         .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
         .persona-row { display: flex; gap: 6px; }
         .pbtn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .1em; padding: 7px 14px; border-radius: 4px; cursor: pointer; transition: all .15s; text-transform: uppercase; }
         .pbtn:hover { border-color: var(--orange); color: var(--text); }
         .pbtn.active { background: var(--orange); border-color: var(--orange); color: #000; font-weight: 600; }
- 
         .launch { width: 100%; background: var(--orange); border: none; color: #000; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; padding: 18px; border-radius: 8px; cursor: pointer; transition: opacity .2s, transform .1s; }
         .launch:hover { opacity: .85; transform: translateY(-1px); }
         .launch:active { transform: translateY(0); }
         .launch:disabled { opacity: .25; cursor: not-allowed; transform: none; }
- 
         .output { margin-top: 36px; }
         .divider { border: none; border-top: 1px solid var(--border); margin-bottom: 28px; }
- 
         .waveform { display: flex; align-items: center; gap: 3px; height: 20px; margin-bottom: 20px; }
         .bar { width: 2px; background: var(--orange); border-radius: 2px; height: 3px; opacity: .4; }
         .bar.playing { animation: wave .7s ease-in-out infinite; opacity: 1; }
@@ -140,16 +134,12 @@ export default function Home() {
         .bar:nth-child(7) { animation-delay: .05s; }
         .bar:nth-child(8) { animation-delay: .35s; }
         @keyframes wave { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(6); } }
- 
         .script-box { background: var(--surface); border: 1px solid var(--border); border-left: 2px solid var(--orange); padding: 20px 24px; border-radius: 8px; font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--muted3); white-space: pre-wrap; margin-bottom: 14px; }
- 
         .play-btn { width: 100%; background: transparent; border: 1px solid var(--orange); color: var(--orange); font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; padding: 16px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; transition: all .2s; }
         .play-btn:hover { background: var(--orange); color: #000; }
- 
         .controls { display: flex; gap: 8px; margin-bottom: 12px; }
         .cbtn { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; padding: 12px; border-radius: 6px; cursor: pointer; transition: all .15s; }
         .cbtn:hover { border-color: var(--orange); color: var(--text); }
- 
         .status { font-size: 10px; color: var(--muted); letter-spacing: .1em; min-height: 16px; text-transform: uppercase; }
         .dot { display: inline-block; width: 5px; height: 5px; background: var(--orange); border-radius: 50%; margin-right: 8px; animation: pulse 1.2s ease-in-out infinite; }
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.1; } }
@@ -163,9 +153,7 @@ export default function Home() {
             <span className="brand-name">UpMate</span>
           </div>
           <div className="time">{time}</div>
-          <div className="app-title">
-            <div className="app-title-main">UpMate</div>
-          </div>
+          <div className="app-title">UpMate</div>
         </div>
  
         <div className="section">
@@ -180,7 +168,7 @@ export default function Home() {
  
         <div className="situation-field">
           <label>Situation / Question du jour (optionnel)</label>
-          <textarea rows={2} value={situation} onChange={e => setSituation(e.target.value)} placeholder="ex: je doute de ma direction, comment gérer ce client difficile..." />
+          <textarea rows={2} value={situation} onChange={e => setSituation(e.target.value)} placeholder="ex: je doute de ma direction, comment gérer ce client..." />
         </div>
  
         <div className="row">
@@ -205,7 +193,7 @@ export default function Home() {
             {script && (
               <>
                 <div className="script-box">{script}</div>
-                {audioData && !playing && (
+                {!playing && (
                   <button className="play-btn" onClick={handlePlay}>Ecouter le brief</button>
                 )}
                 {playing && (
