@@ -16,7 +16,8 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState('');
-  const synthRef = useRef(null);
+  const audioRef = useRef(null);
+  const lastAudioRef = useRef(null);
  
   useEffect(() => {
     const update = () => {
@@ -32,19 +33,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
  
-  const speak = (text) => {
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'fr-FR';
-    utt.rate = 0.92;
-    utt.pitch = 0.88;
-    const voices = window.speechSynthesis.getVoices();
-    const fr = voices.find(v => v.lang.startsWith('fr'));
-    if (fr) utt.voice = fr;
-    utt.onstart = () => { setPlaying(true); setStatus('Lecture en cours...'); };
-    utt.onend = () => { setPlaying(false); setStatus('Brief terminé.'); };
-    utt.onerror = () => { setPlaying(false); setStatus('Erreur voix — lis le script.'); };
-    window.speechSynthesis.speak(utt);
+  const playAudio = (base64) => {
+    if (audioRef.current) { audioRef.current.pause(); }
+    const audio = new Audio(`data:audio/mpeg;base64,${base64}`);
+    audioRef.current = audio;
+    lastAudioRef.current = base64;
+    audio.onplay = () => { setPlaying(true); setStatus('Lecture en cours...'); };
+    audio.onended = () => { setPlaying(false); setStatus('Brief terminé.'); };
+    audio.onerror = () => { setPlaying(false); setStatus('Erreur audio.'); };
+    audio.play();
   };
  
   const launch = async () => {
@@ -59,8 +56,9 @@ export default function Home() {
         body: JSON.stringify({ yesterday, today, persona })
       });
       const data = await res.json();
+      if (data.error) { setStatus('Erreur : ' + data.error); setLoading(false); return; }
       setScript(data.script);
-      setTimeout(() => speak(data.script), 300);
+      if (data.audio) { setStatus('Chargement audio...'); playAudio(data.audio); }
     } catch (err) {
       setStatus('Erreur : ' + err.message);
     }
@@ -68,10 +66,12 @@ export default function Home() {
   };
  
   const stop = () => {
-    window.speechSynthesis.cancel();
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
     setPlaying(false);
     setStatus('Stoppé.');
   };
+ 
+  const replay = () => { if (lastAudioRef.current) playAudio(lastAudioRef.current); };
  
   return (
     <>
@@ -151,7 +151,7 @@ export default function Home() {
               <>
                 <div className="script-box">{script}</div>
                 <div className="controls">
-                  <button className="cbtn" onClick={() => speak(script)}>↻ Rejouer</button>
+                  <button className="cbtn" onClick={replay}>↻ Rejouer</button>
                   <button className="cbtn" onClick={stop}>◼ Stop</button>
                 </div>
               </>
@@ -166,4 +166,5 @@ export default function Home() {
     </>
   );
 }
+ 
  
