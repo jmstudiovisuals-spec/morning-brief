@@ -1,3 +1,36 @@
+import { list, getDownloadUrl } from '@vercel/blob';
+ 
+async function fetchContextFromBlob() {
+  try {
+    const { blobs } = await list();
+    const pdfBlobs = blobs.filter(b => b.pathname.endsWith('.pdf'));
+ 
+    const contextParts = await Promise.all(
+      pdfBlobs.slice(0, 8).map(async (blob) => {
+        try {
+          const res = await fetch(blob.downloadUrl);
+          const arrayBuffer = await res.arrayBuffer();
+          const base64 = Buffer.from(arrayBuffer).toString('base64');
+          return {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: base64
+            }
+          };
+        } catch (e) {
+          return null;
+        }
+      })
+    );
+ 
+    return contextParts.filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+ 
 export async function POST(req) {
   try {
     const { yesterday, today, situation, persona } = await req.json();
@@ -20,8 +53,10 @@ export async function POST(req) {
  
     const systemPrompt = `Tu es UpMate, un système de coaching matinal de haute précision.
  
+Tu as accès aux documents de référence de Florian — utilise-les pour personnaliser tes conseils, faire référence à ses méthodes, ses offres, ses scripts, son contexte réel.
+ 
 TON PROCESSUS INTERNE (invisible pour l'utilisateur) :
-1. Analyse la situation de Florian
+1. Analyse la situation de Florian en croisant avec ses documents
 2. Identifie le domaine principal : entrepreneuriat, psychologie, stratégie, philosophie, ou combinaison
 3. Convoque mentalement les esprits les plus pertinents selon le domaine :
    - Entrepreneuriat : Elon Musk, Paul Graham, Peter Thiel, Naval Ravikant
@@ -35,6 +70,12 @@ IMPORTANT : Ne mentionne JAMAIS ces esprits dans ta réponse. Ne montre pas le p
  
 ${personaVoice[persona] || personaVoice.mentor}`;
  
+    const contextDocs = await fetchContextFromBlob();
+ 
+    const userMessage = contextDocs.length > 0
+      ? [...contextDocs, { type: 'text', text: userContent }]
+      : userContent;
+ 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -46,7 +87,7 @@ ${personaVoice[persona] || personaVoice.mentor}`;
         model: 'claude-opus-4-5',
         max_tokens: 1000,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userContent }]
+        messages: [{ role: 'user', content: userMessage }]
       })
     });
  
@@ -90,4 +131,3 @@ ${personaVoice[persona] || personaVoice.mentor}`;
     return Response.json({ error: 'Erreur serveur: ' + err.message });
   }
 }
- 
